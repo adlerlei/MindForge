@@ -1,7 +1,20 @@
-nuwa-skill-main(參考專案項目)/*
-nuwa-skill-main(參考專案項目)
+# macOS
 .DS_Store
+**/.DS_Store
+
+# Internal dev notes (local only)
+MindForge-DEV.md
+
+# Local reference projects — never publish
+nuwa-skill-main(參考專案項目)/
+nuwa-skill-main(參考專案項目)
+*參考專案*/
+*參考*/
+*参考项目*/
+reference-project*/
+reference-projects/
+
+# Python / Node noise
 *.pyc
 __pycache__/
 node_modules/
-MindForge-DEV.md
