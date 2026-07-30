@@ -1,0 +1,39 @@
+{
+  "name": "mindforge",
+  "version": "0.1.0",
+  "description": "Forge cognitive operating systems from public minds into runnable Agent Skills.",
+  "license": "MIT",
+  "bin": {
+    "mindforge": "./scripts/mindforge"
+  },
+  "files": [
+    "SKILL.md",
+    "LICENSE",
+    "README.md",
+    "README.zh-TW.md",
+    "references/**/*",
+    "scripts/**/*"
+  ],
+  "scripts": {
+    "install-global": "bash scripts/install.sh",
+    "link": "bash scripts/link-agents.sh",
+    "doctor": "bash scripts/mindforge doctor",
+    "quality": "python3 scripts/quality_check.py"
+  },
+  "keywords": [
+    "agent-skills",
+    "mindforge",
+    "mental-models",
+    "cognitive-os",
+    "claude",
+    "codex",
+    "grok"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mindforge-ai/MindForge.git"
+  }
+}

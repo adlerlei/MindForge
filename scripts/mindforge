@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+# MindForge CLI — install, link, list, remove, doctor, quality-check
+set -euo pipefail
+
+GLOBAL_ROOT="${MINDFORGE_HOME:-$HOME/.agents/skills/MindForge}"
+DISTILLED_ROOT="${MINDFORGE_DISTILLED:-$HOME/.agents/skills/distilled}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# If running from a linked install, resolve real scripts
+if [[ -L "$GLOBAL_ROOT" ]]; then
+  REAL_ROOT="$(cd "$(readlink "$GLOBAL_ROOT")" && pwd)"
+else
+  REAL_ROOT="$GLOBAL_ROOT"
+fi
+
+usage() {
+  cat <<'EOF'
+MindForge — forge cognitive operating systems from public minds.
+
+Usage:
+  mindforge <command> [args]
+
+Commands:
+  install [--force]   Install engine to ~/.agents/skills/MindForge + link agents
+  link                (Re)create symlinks for detected Agent CLIs
+  list                List distilled person skills
+  remove <slug>       Remove a distilled skill (folder name under distilled/)
+  doctor              Check install health and agent links
+  quality <path>      Run lightweight quality check on a SKILL.md
+  path                Print engine and distilled paths
+  help                Show this help
+
+Examples:
+  mindforge install --force
+  mindforge list
+  mindforge remove <slug>
+  mindforge quality ~/.agents/skills/distilled/<slug>/SKILL.md
+  mindforge doctor
+EOF
+}
+
+cmd_install() {
+  local installer=""
+  if [[ -f "$SCRIPT_DIR/install.sh" ]]; then
+    installer="$SCRIPT_DIR/install.sh"
+  elif [[ -f "$REAL_ROOT/scripts/install.sh" ]]; then
+    installer="$REAL_ROOT/scripts/install.sh"
+  else
+    echo "❌ install.sh not found"
+    exit 1
+  fi
+  bash "$installer" "$@"
+}
+
+cmd_link() {
+  local linker=""
+  if [[ -f "$SCRIPT_DIR/link-agents.sh" ]]; then
+    linker="$SCRIPT_DIR/link-agents.sh"
+  elif [[ -f "$REAL_ROOT/scripts/link-agents.sh" ]]; then
+    linker="$REAL_ROOT/scripts/link-agents.sh"
+  else
+    echo "❌ link-agents.sh not found"
+    exit 1
+  fi
+  bash "$linker"
+}
+
+cmd_list() {
+  if [[ ! -d "$DISTILLED_ROOT" ]]; then
+    echo "No distilled skills yet. ($DISTILLED_ROOT missing)"
+    echo "Forge one in your Agent app: Forge <name>"
+    return 0
+  fi
+  local count=0
+  echo "📚 Distilled skills → $DISTILLED_ROOT"
+  echo ""
+  shopt -s nullglob
+  for dir in "$DISTILLED_ROOT"/*/; do
+    local name
+    name="$(basename "$dir")"
+    local skill="$dir/SKILL.md"
+    local meta=""
+    if [[ -f "$skill" ]]; then
+      # Try to extract researched date or first heading
+      local heading
+      heading="$(grep -m1 -E '^# ' "$skill" 2>/dev/null | sed 's/^# //' || true)"
+      local researched
+      researched="$(grep -m1 -E '调研时间|researched:|Research date' "$skill" 2>/dev/null | head -1 || true)"
+      meta="  ${heading:-$name}"
+      if [[ -n "$researched" ]]; then
+        meta="$meta  ·  $researched"
+      fi
+    else
+      meta="  (no SKILL.md)"
+    fi
+    printf "  • %-24s%s\n" "$name" "$meta"
+    count=$((count + 1))
+  done
+  shopt -u nullglob
+  echo ""
+  if [[ $count -eq 0 ]]; then
+    echo "  (empty)"
+  else
+    echo "Total: $count"
+  fi
+}
+
+cmd_remove() {
+  local name="${1:-}"
+  if [[ -z "$name" ]]; then
+    echo "Usage: mindforge remove <slug>"
+    echo "Example: mindforge remove <slug>"
+    exit 1
+  fi
+  # Normalize: lowercase, spaces→hyphens
+  name="$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | sed 's/-perspective$//')"
+  local target="$DISTILLED_ROOT/$name"
+  if [[ ! -d "$target" ]]; then
+    echo "❌ Not found: $target"
+    echo "Run: mindforge list"
+    exit 1
+  fi
+  echo "About to remove: $target"
+  read -r -p "Type the name again to confirm ($name): " confirm
+  if [[ "$confirm" != "$name" ]]; then
+    echo "Aborted."
+    exit 1
+  fi
+  rm -rf "$target"
+  echo "✅ Removed $name"
+}
+
+cmd_doctor() {
+  echo "🩺 MindForge doctor"
+  echo ""
+  local ok=0
+  local warn=0
+  local fail=0
+
+  check() {
+    local status="$1" msg="$2"
+    case "$status" in
+      ok)   echo "  ✅ $msg"; ok=$((ok+1)) ;;
+      warn) echo "  ⚠  $msg"; warn=$((warn+1)) ;;
+      fail) echo "  ❌ $msg"; fail=$((fail+1)) ;;
+    esac
+  }
+
+  if [[ -d "$GLOBAL_ROOT" ]] || [[ -L "$GLOBAL_ROOT" ]]; then
+    check ok "Engine present: $GLOBAL_ROOT"
+    if [[ -L "$GLOBAL_ROOT" ]]; then
+      check ok "Engine is symlink → $(readlink "$GLOBAL_ROOT")"
+    else
+      check ok "Engine is installed copy (production mode)"
+    fi
+  else
+    check fail "Engine missing: $GLOBAL_ROOT"
+  fi
+
+  if [[ -f "$GLOBAL_ROOT/SKILL.md" ]]; then
+    check ok "SKILL.md found"
+  else
+    check fail "SKILL.md missing under engine"
+  fi
+
+  for f in harvest-guide.md synthesis-rules.md skill-blueprint.md quality-gate.md; do
+    if [[ -f "$GLOBAL_ROOT/references/$f" ]]; then
+      check ok "references/$f"
+    else
+      check fail "Missing references/$f"
+    fi
+  done
+
+  if [[ -d "$DISTILLED_ROOT" ]]; then
+    local n
+    n="$(find "$DISTILLED_ROOT" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
+    check ok "Distilled root: $DISTILLED_ROOT ($n skills)"
+  else
+    check warn "Distilled root missing (will be created on first forge)"
+  fi
+
+  echo ""
+  echo "Agent links:"
+  local paths=(
+    "$HOME/.claude/skills/MindForge"
+    "$HOME/.grok/skills/MindForge"
+    "$HOME/.codex/skills/MindForge"
+    "$HOME/.gemini/skills/MindForge"
+    "$HOME/.opencode/skills/MindForge"
+    "$HOME/.cursor/skills/MindForge"
+    "$HOME/.agents/skills/MindForge"
+  )
+  for p in "${paths[@]}"; do
+    local pretty
+    pretty="$(echo "$p" | sed "s|$HOME|~|")"
+    if [[ "$p" == "$GLOBAL_ROOT" ]]; then
+      if [[ -f "$p/SKILL.md" ]]; then
+        check ok "$pretty  (global engine)"
+      else
+        check fail "$pretty  missing SKILL.md"
+      fi
+      continue
+    fi
+    if [[ -L "$p" ]]; then
+      check ok "$pretty → $(readlink "$p")"
+    elif [[ -d "$p" && -f "$p/SKILL.md" ]]; then
+      check ok "$pretty  (local copy)"
+    elif [[ -d "$p" ]]; then
+      check warn "$pretty exists but is not a usable MindForge"
+    else
+      parent="$(dirname "$p")"
+      if [[ -d "$(dirname "$parent")" ]]; then
+        check warn "$pretty not linked (tool may be unused)"
+      fi
+    fi
+  done
+
+  if command -v mindforge >/dev/null 2>&1; then
+    check ok "CLI on PATH: $(command -v mindforge)"
+  else
+    check warn "CLI not on PATH (install puts it in ~/.local/bin)"
+  fi
+
+  echo ""
+  echo "Summary: $ok ok · $warn warn · $fail fail"
+  if [[ $fail -gt 0 ]]; then
+    echo "Fix: mindforge install --force && mindforge link"
+    exit 1
+  fi
+}
+
+cmd_quality() {
+  local path="${1:-}"
+  if [[ -z "$path" ]]; then
+    echo "Usage: mindforge quality <path-to-SKILL.md>"
+    exit 1
+  fi
+  local checker=""
+  if [[ -f "$SCRIPT_DIR/quality_check.py" ]]; then
+    checker="$SCRIPT_DIR/quality_check.py"
+  elif [[ -f "$REAL_ROOT/scripts/quality_check.py" ]]; then
+    checker="$REAL_ROOT/scripts/quality_check.py"
+  else
+    echo "❌ quality_check.py not found"
+    exit 1
+  fi
+  python3 "$checker" "$path"
+}
+
+cmd_path() {
+  echo "MINDFORGE_HOME=$GLOBAL_ROOT"
+  echo "MINDFORGE_DISTILLED=$DISTILLED_ROOT"
+  if [[ -L "$GLOBAL_ROOT" ]]; then
+    echo "REAL_ROOT=$(readlink "$GLOBAL_ROOT")"
+  fi
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+  case "$cmd" in
+    install) cmd_install "$@" ;;
+    link)    cmd_link "$@" ;;
+    list|ls) cmd_list "$@" ;;
+    remove|rm) cmd_remove "$@" ;;
+    doctor)  cmd_doctor "$@" ;;
+    quality|check) cmd_quality "$@" ;;
+    path)    cmd_path "$@" ;;
+    help|-h|--help) usage ;;
+    *)
+      echo "Unknown command: $cmd"
+      echo ""
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

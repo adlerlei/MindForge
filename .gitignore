@@ -1,2 +1,7 @@
 nuwa-skill-main(參考專案項目)/*
 nuwa-skill-main(參考專案項目)
+.DS_Store
+*.pyc
+__pycache__/
+node_modules/
+MindForge-DEV.md
