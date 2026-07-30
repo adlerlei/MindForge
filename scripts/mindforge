@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# MindForge CLI — install, link, list, remove, doctor, quality-check
+# MindForge CLI — install, link, list, remove/delete, doctor, quality-check, version
 set -euo pipefail
 
 GLOBAL_ROOT="${MINDFORGE_HOME:-$HOME/.agents/skills/MindForge}"
 DISTILLED_ROOT="${MINDFORGE_DISTILLED:-$HOME/.agents/skills/distilled}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_URL="https://github.com/adlerlei/MindForge"
 
 # If running from a linked install, resolve real scripts
 if [[ -L "$GLOBAL_ROOT" ]]; then
@@ -13,9 +14,38 @@ else
   REAL_ROOT="$GLOBAL_ROOT"
 fi
 
+mindforge_version() {
+  local v="0.0.0"
+  for candidate in \
+    "$SCRIPT_DIR/../VERSION" \
+    "$REAL_ROOT/VERSION" \
+    "$GLOBAL_ROOT/VERSION" \
+    "$SCRIPT_DIR/../package.json" \
+    "$REAL_ROOT/package.json" \
+    "$GLOBAL_ROOT/package.json"
+  do
+    if [[ -f "$candidate" && "$(basename "$candidate")" == "VERSION" ]]; then
+      v="$(tr -d '[:space:]' < "$candidate")"
+      break
+    fi
+    if [[ -f "$candidate" && "$(basename "$candidate")" == "package.json" ]]; then
+      if command -v python3 >/dev/null 2>&1; then
+        v="$(python3 -c "import json; print(json.load(open('$candidate')).get('version','0.0.0'))" 2>/dev/null || true)"
+      else
+        v="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$candidate" | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+      fi
+      [[ -n "$v" ]] && break
+    fi
+  done
+  echo "$v"
+}
+
 usage() {
-  cat <<'EOF'
-MindForge — forge cognitive operating systems from public minds.
+  local ver
+  ver="$(mindforge_version)"
+  cat <<EOF
+MindForge v${ver} — forge cognitive operating systems from public minds.
+${REPO_URL}
 
 Usage:
   mindforge <command> [args]
@@ -24,19 +54,30 @@ Commands:
   install [--force]   Install engine to ~/.agents/skills/MindForge + link agents
   link                (Re)create symlinks for detected Agent CLIs
   list                List distilled person skills
-  remove <slug>       Remove a distilled skill (folder name under distilled/)
+  remove <name>       Remove a distilled skill (same as delete)
+  delete <name>       Remove a distilled skill (same as remove)
   doctor              Check install health and agent links
   quality <path>      Run lightweight quality check on a SKILL.md
   path                Print engine and distilled paths
+  version             Print version and GitHub URL
   help                Show this help
 
 Examples:
   mindforge install --force
   mindforge list
-  mindforge remove <slug>
+  mindforge remove <name>
+  mindforge delete <name>
   mindforge quality ~/.agents/skills/distilled/<slug>/SKILL.md
   mindforge doctor
+  mindforge version
 EOF
+}
+
+cmd_version() {
+  local ver
+  ver="$(mindforge_version)"
+  echo "MindForge v${ver}"
+  echo "GitHub: ${REPO_URL}"
 }
 
 cmd_install() {
@@ -108,8 +149,8 @@ cmd_list() {
 cmd_remove() {
   local name="${1:-}"
   if [[ -z "$name" ]]; then
-    echo "Usage: mindforge remove <slug>"
-    echo "Example: mindforge remove <slug>"
+    echo "Usage: mindforge remove <name>   (or: mindforge delete <name>)"
+    echo "Example: mindforge delete first-last"
     exit 1
   fi
   # Normalize: lowercase, spaces→hyphens
@@ -131,7 +172,10 @@ cmd_remove() {
 }
 
 cmd_doctor() {
-  echo "🩺 MindForge doctor"
+  local ver
+  ver="$(mindforge_version)"
+  echo "🩺 MindForge doctor  ·  v${ver}"
+  echo "   ${REPO_URL}"
   echo ""
   local ok=0
   local warn=0
@@ -262,10 +306,11 @@ main() {
     install) cmd_install "$@" ;;
     link)    cmd_link "$@" ;;
     list|ls) cmd_list "$@" ;;
-    remove|rm) cmd_remove "$@" ;;
+    remove|rm|delete|del) cmd_remove "$@" ;;
     doctor)  cmd_doctor "$@" ;;
     quality|check) cmd_quality "$@" ;;
     path)    cmd_path "$@" ;;
+    version|-v|--version) cmd_version "$@" ;;
     help|-h|--help) usage ;;
     *)
       echo "Unknown command: $cmd"

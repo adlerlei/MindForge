@@ -1,6 +1,10 @@
 # MindForge
 
-**Turn a public thinker’s mind into a runnable Agent Skill.**
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/adlerlei/MindForge)
+[![GitHub](https://img.shields.io/badge/GitHub-adlerlei%2FMindForge-181717?logo=github)](https://github.com/adlerlei/MindForge)
+
+**Turn a public thinker’s mind into a runnable Agent Skill.**  
+**Version:** `0.1.0` · **Repo:** https://github.com/adlerlei/MindForge
 
 You type a person’s name (or a topic). MindForge researches their public record, extracts how they actually reason, and writes a skill your AI tools can load—so you can ask questions *through that lens*.
 
@@ -135,11 +139,23 @@ MindForge will:
 
 ### 3. Use a forged person
 
+Activation uses **four verbs only**, plus name aliases (local name / English full name / short name):
+
 ```text
-Use <name>’s perspective on this problem
-用 <名字> 的視角看這件事
-Switch to <slug>
+呼叫 <本地名>
+呼叫 <English Full Name>
+呼叫 <short>
+hello <English Full Name>
+hello <short>
+hi <本地名>
+hi <English Full Name>
+hi <short>
+@ <本地名>
+@ <English Full Name>
+@ <short>
 ```
+
+Examples of shape (placeholders): `呼叫 <本地名>` · `hello <Full Name>` · `hi <short>` · `@ <本地名>`
 
 ### 4. Update someone later
 
@@ -150,10 +166,20 @@ Update <name>
 更新 <slug>
 ```
 
-Or remove a forged skill from disk:
+### 5. Delete someone
+
+In the Agent chat (only these two forms):
+
+```text
+delete <name>
+remove <name>
+```
+
+CLI equivalents:
 
 ```bash
-mindforge remove <slug>
+mindforge delete <name>
+mindforge remove <name>
 ```
 
 ---
@@ -186,16 +212,19 @@ Run `mindforge help` for the full list. Common ones:
 | `mindforge doctor` | Health check (paths, links, files) |
 | `mindforge list` | List forged people under `distilled/` |
 | `mindforge remove <name>` | Delete one forged person (asks for confirm) |
+| `mindforge delete <name>` | Same as `remove` |
 | `mindforge quality <path>` | Run automated quality checks on a `SKILL.md` |
 | `mindforge path` | Print engine and distilled paths |
+| `mindforge version` | Print version + GitHub URL |
 | `mindforge help` | Show help |
 
 Examples:
 
 ```bash
+mindforge version
 mindforge list
 mindforge quality ~/.agents/skills/distilled/<slug>/SKILL.md
-mindforge remove <slug>
+mindforge delete <name>
 mindforge link
 ```
 

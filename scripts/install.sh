@@ -10,7 +10,7 @@ set -euo pipefail
 
 FORCE=0
 SOURCE_DIR=""
-REPO_URL="${MINDFORGE_REPO:-https://github.com/mindforge-ai/MindForge.git}"
+REPO_URL="${MINDFORGE_REPO:-https://github.com/adlerlei/MindForge.git}"
 BRANCH="${MINDFORGE_BRANCH:-main}"
 
 for arg in "$@"; do
@@ -111,7 +111,7 @@ else
         # Fallback without rsync: only ship known engine files
         rm -rf "$GLOBAL_ROOT"
         mkdir -p "$GLOBAL_ROOT"
-        for item in SKILL.md README.md README.zh-TW.md LICENSE package.json references scripts examples; do
+        for item in SKILL.md VERSION README.md README.zh-TW.md LICENSE package.json references scripts examples; do
           if [[ -e "$SRC/$item" ]]; then
             cp -R "$SRC/$item" "$GLOBAL_ROOT/"
           fi

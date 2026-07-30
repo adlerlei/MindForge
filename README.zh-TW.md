@@ -1,6 +1,10 @@
 # MindForge
 
-**把公開人物的思維方式，鍛造成可運行的 Agent Skill。**
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/adlerlei/MindForge)
+[![GitHub](https://img.shields.io/badge/GitHub-adlerlei%2FMindForge-181717?logo=github)](https://github.com/adlerlei/MindForge)
+
+**把公開人物的思維方式，鍛造成可運行的 Agent Skill。**  
+**版本：** `0.1.0` · **倉庫：** https://github.com/adlerlei/MindForge
 
 你輸入一個人名（或主題）。MindForge 會調研公開資料、提煉對方真正怎麼思考，並寫成你的 AI 工具能載入的 Skill——之後就能用「那個人的鏡片」來問問題。
 
@@ -135,11 +139,23 @@ MindForge 會：
 
 ### 3. 使用已鍛造的人物
 
+啟用**只有四種動詞**，再接名字別名（本地常用名／英文全名／短名）：
+
 ```text
-Use <name>’s perspective on this problem
-用 <名字> 的視角看這件事
-切換到 <slug>
+呼叫 <本地名>
+呼叫 <English Full Name>
+呼叫 <short>
+hello <English Full Name>
+hello <short>
+hi <本地名>
+hi <English Full Name>
+hi <short>
+@ <本地名>
+@ <English Full Name>
+@ <short>
 ```
+
+句式形狀：`呼叫 <本地名>` · `hello <Full Name>` · `hi <short>` · `@ <本地名>`
 
 ### 4. 之後要更新某人
 
@@ -150,10 +166,20 @@ Update <name>
 更新 <slug>
 ```
 
-或從磁碟刪除某個人：
+### 5. 刪除某人
+
+在 Agent 對話中（**只用**這兩種）：
+
+```text
+delete <name>
+remove <name>
+```
+
+CLI 等價：
 
 ```bash
-mindforge remove <slug>
+mindforge delete <name>
+mindforge remove <name>
 ```
 
 ---
@@ -188,16 +214,19 @@ mindforge remove <slug>
 | `mindforge doctor` | 健康檢查（路徑、連結、必要檔案） |
 | `mindforge list` | 列出 `distilled/` 裡已鍛造的人物 |
 | `mindforge remove <名稱>` | 刪除某位鍛造人物（會要求確認） |
+| `mindforge delete <名稱>` | 同 `remove` |
 | `mindforge quality <路徑>` | 對某份 `SKILL.md` 做自動品質檢查 |
 | `mindforge path` | 印出引擎與 distilled 路徑 |
+| `mindforge version` | 印出版本號與 GitHub 網址 |
 | `mindforge help` | 顯示說明 |
 
 範例：
 
 ```bash
+mindforge version
 mindforge list
 mindforge quality ~/.agents/skills/distilled/<slug>/SKILL.md
-mindforge remove <slug>
+mindforge delete <name>
 mindforge link
 ```
 

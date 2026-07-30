@@ -76,4 +76,4 @@ Critical set: model count, failure modes, voice DNA, honest limits, inference la
     └── 06-timeline.md
 ```
 
-Ship message must include: path, triggers, gate summary, weak spots, update phrase.
+Ship message must include: path, activation triggers (`呼叫` / `hello` / `hi` / `@` + name aliases), gate summary, weak spots, update phrase.

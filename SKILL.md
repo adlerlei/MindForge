@@ -3,12 +3,16 @@ name: mindforge
 description: |
   Forge a runnable cognitive skill from any public thinker or topic.
   Deep research → proven mental models → decision heuristics → voice DNA → honest limits.
+  Version: 0.1.0 · GitHub: https://github.com/adlerlei/MindForge
   Triggers: forge, MindForge, distill, build a perspective on X, how does X think,
   update X skill, thinking advisor, mental model skill.
+  Delete a forged person: "delete <name>", "remove <name>" (not mindforge CLI required in chat).
   Also fuzzy needs: "I want better decisions", "I need a thinking partner for product calls".
 ---
 
 # MindForge
+
+**Version:** `0.1.0` · **GitHub:** https://github.com/adlerlei/MindForge
 
 MindForge builds **runnable cognitive operating systems** from public records—not costume roleplay, not quote scrapbooks.
 
@@ -47,8 +51,10 @@ Display names in the user’s language live inside `SKILL.md`.
 CLI (optional):
 
 ```bash
-mindforge install | link | list | remove <slug> | doctor | quality <path>
+mindforge install | link | list | remove <name> | delete <name> | doctor | quality <path> | version
 ```
+
+**Version source of truth:** repo root `VERSION` (keep in sync with `package.json` → `version`).
 
 ---
 
@@ -90,8 +96,31 @@ Classify the request:
 | Clear person or topic | → Scope (direct) |
 | Vague goal (“better decisions”) | → Scope (advisor match) |
 | “Update X” | → Incremental update (see below) |
+| `delete <name>` / `remove <name>` | → Delete forged skill (see below) |
 
 Set `user_language` and keep it for the rest of the run.
+
+### Delete forged skill (chat)
+
+User phrases (English verbs only; name may be local, English, or slug):
+
+```text
+delete <name>
+remove <name>
+```
+
+**Do this:**
+
+1. Resolve `<name>` to a folder under `~/.agents/skills/distilled/`  
+   (lowercase, spaces→hyphens; try exact slug, then fuzzy match via `mindforge list`).  
+2. Confirm with the user the resolved path once if ambiguous.  
+3. Delete the whole folder:  
+   `mindforge delete <slug>` or `mindforge remove <slug>`  
+   (CLI asks for type-to-confirm; if running non-interactively, `rm -rf` only after explicit user yes).  
+4. Report success + remaining skills (`mindforge list`).
+
+Do **not** require bash knowledge from the user beyond the chat line.  
+Do **not** delete the MindForge engine itself.
 
 ---
 
@@ -236,14 +265,19 @@ OK → Assemble; else return to Crystalize.
 1. Load `references/skill-blueprint.md`  
 2. Fill every section—no empty shells  
 3. **Agentic protocol:** research angles must be **derived from this mind’s models**, not generic “search the web”  
-4. Keep YAML `description` roughly ≤300 words, clear triggers, low false-fire  
-5. Write:
+4. Keep YAML `description` roughly ≤300 words  
+5. **Activation triggers (mandatory):** use **only** the four verbs  
+   `呼叫` / `hello` / `hi` / `@`  
+   plus name aliases: `[local-name]`, `[full-en]`, `[short-en]` (and given name if useful).  
+   Expand the full combo list per `references/skill-blueprint.md` → *Activation triggers*.  
+   Do **not** default to “use X perspective” / “X mode” / method jargon as primary triggers.  
+6. Write:
 
 ```text
 ~/.agents/skills/distilled/<slug>/SKILL.md
 ```
 
-6. Footer credits **MindForge** only  
+7. Footer credits **MindForge** only  
 
 Then run:
 
@@ -277,10 +311,14 @@ Crystalize ↔ Prove at most **two** loops. Remaining non-critical gaps go into 
 Tell the user (their language):
 
 1. Disk path of the forged skill  
-2. Activation phrases  
+2. **Activation phrases** — always the four-verb pattern:  
+   `呼叫 [local-name]` · `hello [full-en]` · `hi [short-en]` · `@ [local-name]`  
+   (list the filled aliases for this forge; do not invent other call styles)  
 3. Gate result + known weak spots  
-4. How to update later  
-5. If the host app is blind to the skill: `mindforge link` / `mindforge doctor`
+4. How to update later (`Update <name>`)  
+5. How to delete later: `delete <name>` or `remove <name>`  
+6. Engine version (`VERSION` / `mindforge version`) + GitHub URL  
+7. If the host app is blind to the skill: `mindforge link` / `mindforge doctor`
 
 ---
 

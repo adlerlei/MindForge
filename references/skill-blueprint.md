@@ -9,6 +9,67 @@ Use this skeleton in Stage **Assemble**. Replace every `[placeholder]`. Do not l
 
 ---
 
+## Activation triggers (mandatory · all forged skills)
+
+Every forged skill **must** expose the same call pattern in YAML `description`.  
+Do **not** invent ad-hoc phrases like “use X’s perspective” / “X mode” unless the user explicitly asks for extra aliases.
+
+### Four verbs only
+
+| Verb | Notes |
+|------|--------|
+| `呼叫` | Primary CJK call |
+| `hello` | English, case-insensitive in practice |
+| `hi` | English short form |
+| `@` | Mention-style; allow optional space after `@` |
+
+### Name slots to fill at Assemble
+
+For each person (or named topic), collect aliases at Crystalize/Assemble:
+
+| Slot | What to put | Example shape (placeholders only) |
+|------|-------------|-----------------------------------|
+| `[local-name]` | Common name in the user’s language | 中文名／日文名等 |
+| `[full-en]` | Full English name (or standard romanization) | First Last |
+| `[short-en]` | Short handle / surname / given name often used | last or first, lowercase ok |
+
+Theme skills (no person): use topic title as `[local-name]` / `[full-en]` / short slug-like `[short-en]`.
+
+### Required trigger lines (expand all combos that apply)
+
+```text
+呼叫 [local-name]
+呼叫 [full-en]
+呼叫 [short-en]
+hello [full-en]
+hello [short-en]
+hello [given-en]          # if distinct from short-en
+hi [local-name]
+hi [full-en]
+hi [short-en]
+@ [local-name]
+@ [full-en]
+@ [short-en]
+```
+
+Also list space-optional `@` forms in description if helpful: `@[short-en]` and `@ [short-en]`.
+
+### Do not fire
+
+- Bare name alone with no verb (`呼叫` / `hello` / `hi` / `@`)  
+- Unrelated small talk  
+- Method jargon alone (unless user requested extra aliases)
+
+### Ship message
+
+When shipping, print activation as:
+
+```text
+呼叫 [local-name]  |  hello [full-en]  |  hi [short-en]  |  @ [local-name]
+```
+
+---
+
 ```markdown
 ---
 name: [slug]
@@ -16,8 +77,13 @@ description: |
   Cognitive framework and voice of [Person]. Built from [source scale] of public research.
   [N] mental models, [N] decision heuristics, full voice DNA.
   Use as a thinking advisor through [Person]’s lens.
-  Triggers: "use [Person] perspective", "[Person] would think", "[Person] mode",
-  "[english] perspective". Do not fire on unrelated small talk.
+  Activation (only these verbs + name aliases): 呼叫 / hello / hi / @
+  Triggers: 呼叫 [local-name], 呼叫 [full-en], 呼叫 [short-en],
+  hello [full-en], hello [short-en], hello [given-en],
+  hi [local-name], hi [full-en], hi [short-en],
+  @ [local-name], @ [full-en], @ [short-en],
+  @[short-en], @[full-en].
+  Do not fire on bare names without a verb, or unrelated small talk.
 ---
 
 # [Person] · Cognitive OS
@@ -208,7 +274,7 @@ See `research/` in this folder.
 
 ---
 
-> Forged with [MindForge](https://github.com/mindforge-ai/MindForge)  
+> Forged with [MindForge](https://github.com/adlerlei/MindForge) v0.1.0  
 > Engine: mindforge · MIT License
 ```
 

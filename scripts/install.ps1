@@ -48,7 +48,7 @@ if ((Test-Path $GlobalRoot) -and -not $Force) {
     } else {
         Write-Host "📦 Copying engine from $Src"
         New-Item -ItemType Directory -Force -Path $GlobalRoot | Out-Null
-        $include = @('SKILL.md', 'README.md', 'README.zh-TW.md', 'LICENSE', 'package.json', 'references', 'scripts', 'examples')
+        $include = @('SKILL.md', 'VERSION', 'README.md', 'README.zh-TW.md', 'LICENSE', 'package.json', 'references', 'scripts', 'examples')
         foreach ($name in $include) {
             $p = Join-Path $Src $name
             if (Test-Path $p) {

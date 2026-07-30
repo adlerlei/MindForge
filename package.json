@@ -8,6 +8,7 @@
   },
   "files": [
     "SKILL.md",
+    "VERSION",
     "LICENSE",
     "README.md",
     "README.zh-TW.md",
@@ -34,6 +35,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mindforge-ai/MindForge.git"
+    "url": "https://github.com/adlerlei/MindForge.git"
+  },
+  "homepage": "https://github.com/adlerlei/MindForge",
+  "bugs": {
+    "url": "https://github.com/adlerlei/MindForge/issues"
   }
 }
+
